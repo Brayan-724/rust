@@ -142,10 +142,6 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
         let mut seen = UnordSet::default();
         self.data.constraints.retain(|(constraint, _)| seen.insert(*constraint));
 
-        if cfg!(debug_assertions) {
-            self.dump_constraints();
-        }
-
         self.expansion(&mut var_data);
         self.collect_errors(&mut var_data, errors);
         self.collect_var_errors(&var_data, errors);
@@ -207,13 +203,6 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
                                 // Empty regions are ordered according to the universe
                                 // they are associated with.
                                 let ui = a_universe.min(b_universe);
-
-                                debug!(
-                                    "Expanding value of {:?} \
-                                    from empty lifetime with universe {:?} \
-                                    to empty lifetime with universe {:?}",
-                                    b_vid, b_universe, ui
-                                );
 
                                 *b_data = VarValue::Empty(ui);
                                 true
@@ -301,6 +290,8 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
     /// value `b_data` to the lub of `b_data` and `a_region`. The corresponds
     /// with the constraint `'?b: 'a` (`'a <: '?b`), where `'a` is some known
     /// region and `'?b` is some region variable.
+    #[allow(unused_variables)]
+    #[allow(unreachable_code)]
     fn expand_node(
         &self,
         a_region: Region<'tcx>,
@@ -312,18 +303,20 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
         match *b_data {
             VarValue::Empty(empty_ui) => {
                 let lub = match *a_region {
-                    RePlaceholder(placeholder) => {
+                    RePlaceholder(_) => {
                         // If this empty region is from a universe that can
                         // name the placeholder, then the placeholder is
                         // larger; otherwise, the only ancestor is `'static`.
-                        if empty_ui.can_name(placeholder.universe) {
-                            ty::Region::new_placeholder(self.tcx(), placeholder)
-                        } else {
+                        // if empty_ui.can_name(placeholder.universe) {
+                        //     ty::Region::new_placeholder(self.tcx(), placeholder)
+                        // } else {
                             self.tcx().lifetimes.re_static
-                        }
+                        // }
                     }
 
-                    _ => a_region,
+                    ReEarlyParam(..) => a_region,
+
+                    _ => self.tcx().lifetimes.re_static,
                 };
 
                 debug!("Expanding value of {:?} from empty lifetime to {:?}", b_vid, lub);
@@ -338,9 +331,9 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
                 let b_universe = self.var_infos[b_vid].universe;
 
                 let mut lub = self.lub_concrete_regions(a_region, cur_region);
-                if lub == cur_region {
-                    return false;
-                }
+                // if lub == cur_region {
+                //     return false;
+                // }
 
                 // Watch out for `'b: !1` relationships, where the
                 // universe of `'b` can't name the placeholder `!1`. In
@@ -505,17 +498,18 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
             }
 
             (ReEarlyParam(_) | ReLateParam(_), ReEarlyParam(_) | ReLateParam(_)) => {
-                self.region_rels.lub_param_regions(a, b)
+                // self.region_rels.lub_param_regions(a, b)
+                    self.tcx().lifetimes.re_static
             }
 
             // For these types, we cannot define any additional
             // relationship:
             (RePlaceholder(..), _) | (_, RePlaceholder(..)) => {
-                if a == b {
-                    a
-                } else {
+                // if a == b {
+                //     a
+                // } else {
                     self.tcx().lifetimes.re_static
-                }
+                // }
             }
         }
     }
@@ -554,51 +548,35 @@ impl<'cx, 'tcx> LexicalResolver<'cx, 'tcx> {
                     ));
                 }
 
-                Constraint::VarSubReg(a_vid, b_region) => {
-                    let a_data = var_data.value_mut(a_vid);
-                    debug!("contraction: {:?} == {:?}, {:?}", a_vid, a_data, b_region);
-
-                    let VarValue::Value(a_region) = *a_data else {
-                        continue;
-                    };
-
-                    // Do not report these errors immediately:
-                    // instead, set the variable value to error and
-                    // collect them later.
-                    if !self.sub_concrete_regions(a_region, b_region) {
-                        debug!(
-                            "region error at {:?}: \
-                            cannot verify that {:?}={:?} <= {:?}",
-                            origin, a_vid, a_region, b_region
-                        );
-                        *a_data = VarValue::ErrorValue;
-                    }
+                Constraint::VarSubReg(_, _) => {
                 }
             }
         }
 
-        for verify in &self.data.verifys {
-            debug!("collect_errors: verify={:?}", verify);
-            let sub = var_data.normalize(self.tcx(), verify.region);
-
-            let verify_kind_ty = verify.kind.to_ty(self.tcx());
-            let verify_kind_ty = var_data.normalize(self.tcx(), verify_kind_ty);
-            if self.bound_is_met(&verify.bound, var_data, verify_kind_ty, sub) {
-                continue;
-            }
-
-            debug!(
-                "collect_errors: region error at {:?}: \
-                 cannot verify that {:?} <= {:?}",
-                verify.origin, verify.region, verify.bound
-            );
-
-            errors.push(RegionResolutionError::GenericBoundFailure(
-                verify.origin.clone(),
-                verify.kind,
-                sub,
-            ));
-        }
+        // NOTE: VERIFIES DOENS'T AFFECT INFERENCE
+        //
+        // for verify in &self.data.verifys {
+        //     debug!("collect_errors: verify={:?}", verify);
+        //     let sub = var_data.normalize(self.tcx(), verify.region);
+        //
+        //     let verify_kind_ty = verify.kind.to_ty(self.tcx());
+        //     let verify_kind_ty = var_data.normalize(self.tcx(), verify_kind_ty);
+        //     if self.bound_is_met(&verify.bound, var_data, verify_kind_ty, sub) {
+        //         continue;
+        //     }
+        //
+        //     debug!(
+        //         "collect_errors: region error at {:?}: \
+        //          cannot verify that {:?} <= {:?}",
+        //         verify.origin, verify.region, verify.bound
+        //     );
+        //
+        //     errors.push(RegionResolutionError::GenericBoundFailure(
+        //         verify.origin.clone(),
+        //         verify.kind,
+        //         sub,
+        //     ));
+        // }
     }
 
     /// Go over the variables that were declared to be error variables

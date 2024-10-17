@@ -11,10 +11,12 @@ use rustc_span::Span;
 
 use crate::errors::UnconditionalRecursion;
 
+#[allow(dead_code)]
 pub(crate) fn check<'tcx>(tcx: TyCtxt<'tcx>, body: &Body<'tcx>) {
     check_call_recursion(tcx, body);
 }
 
+#[allow(dead_code)]
 fn check_call_recursion<'tcx>(tcx: TyCtxt<'tcx>, body: &Body<'tcx>) {
     let def_id = body.source.def_id().expect_local();
 
@@ -104,6 +106,7 @@ struct Search<'mir, 'tcx, C: TerminatorClassifier<'tcx>> {
     reachable_recursive_calls: Vec<Span>,
 }
 
+#[allow(dead_code)]
 struct CallRecursion<'tcx> {
     trait_args: &'tcx [GenericArg<'tcx>],
 }

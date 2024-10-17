@@ -133,16 +133,16 @@ pub(crate) fn compute_regions<'a, 'tcx>(
     let placeholder_indices = Rc::new(placeholder_indices);
 
     // If requested, emit legacy polonius facts.
-    polonius::emit_facts(
-        &mut all_facts,
-        infcx.tcx,
-        location_table,
-        body,
-        borrow_set,
-        move_data,
-        &universal_regions,
-        &universal_region_relations,
-    );
+    // polonius::emit_facts(
+    //     &mut all_facts,
+    //     infcx.tcx,
+    //     location_table,
+    //     body,
+    //     borrow_set,
+    //     move_data,
+    //     &universal_regions,
+    //     &universal_region_relations,
+    // );
 
     if let Some(guar) = universal_regions.tainted_by_errors() {
         // Suppress unhelpful extra errors in `infer_opaque_types` by clearing out all

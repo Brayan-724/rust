@@ -27,10 +27,8 @@ use rustc_middle::ty::{
     IsIdentity, Ty, TyCtxt, UserArgs, UserSelfTy, UserType,
 };
 use rustc_middle::{bug, span_bug};
-use rustc_session::lint;
 use rustc_span::Span;
 use rustc_span::def_id::LocalDefId;
-use rustc_span::hygiene::DesugaringKind;
 use rustc_span::symbol::kw;
 use rustc_target::abi::FieldIdx;
 use rustc_trait_selection::error_reporting::infer::need_type_info::TypeAnnotationNeeded;
@@ -42,50 +40,9 @@ use tracing::{debug, instrument};
 use crate::callee::{self, DeferredCallResolution};
 use crate::errors::{self, CtorIsPrivate};
 use crate::method::{self, MethodCallee};
-use crate::{BreakableCtxt, Diverges, Expectation, FnCtxt, LoweredTy, rvalue_scopes};
+use crate::{BreakableCtxt, Expectation, FnCtxt, LoweredTy, rvalue_scopes};
 
 impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
-    /// Produces warning on the given node, if the current point in the
-    /// function is unreachable, and there hasn't been another warning.
-    pub(crate) fn warn_if_unreachable(&self, id: HirId, span: Span, kind: &str) {
-        let Diverges::Always { span: orig_span, custom_note } = self.diverges.get() else {
-            return;
-        };
-
-        match span.desugaring_kind() {
-            // If span arose from a desugaring of `if` or `while`, then it is the condition
-            // itself, which diverges, that we are about to lint on. This gives suboptimal
-            // diagnostics. Instead, stop here so that the `if`- or `while`-expression's
-            // block is linted instead.
-            Some(DesugaringKind::CondTemporary) => return,
-
-            // Don't lint if the result of an async block or async function is `!`.
-            // This does not affect the unreachable lints *within* the body.
-            Some(DesugaringKind::Async) => return,
-
-            // Don't lint *within* the `.await` operator, since that's all just desugaring
-            // junk. We only want to lint if there is a subsequent expression after the
-            // `.await` operator.
-            Some(DesugaringKind::Await) => return,
-
-            _ => {}
-        }
-
-        // Don't warn twice.
-        self.diverges.set(Diverges::WarnedAlways);
-
-        debug!("warn_if_unreachable: id={:?} span={:?} kind={}", id, span, kind);
-
-        let msg = format!("unreachable {kind}");
-        self.tcx().node_span_lint(lint::builtin::UNREACHABLE_CODE, id, span, |lint| {
-            lint.primary_message(msg.clone());
-            lint.span_label(span, msg).span_label(
-                orig_span,
-                custom_note.unwrap_or("any code following this expression is unreachable"),
-            );
-        })
-    }
-
     /// Resolves type and const variables in `ty` if possible. Unlike the infcx
     /// version (resolve_vars_if_possible), this version will
     /// also select obligations if it seems useful, in an effort

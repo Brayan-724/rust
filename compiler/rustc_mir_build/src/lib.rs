@@ -11,6 +11,10 @@
 #![warn(unreachable_pub)]
 // tidy-alphabetical-end
 
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(dead_code)]
+
 mod build;
 mod check_unsafety;
 mod errors;

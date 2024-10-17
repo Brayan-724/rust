@@ -377,13 +377,6 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             // Check each argument, to satisfy the input it was provided for
             // Visually, we're traveling down the diagonal of the compatibility matrix
             for (idx, arg) in provided_args.iter().enumerate() {
-                // Warn only for the first loop (the "no closures" one).
-                // Closure arguments themselves can't be diverging, but
-                // a previous argument can, e.g., `foo(panic!(), || {})`.
-                if !check_closures {
-                    self.warn_if_unreachable(arg.hir_id, arg.span, "expression");
-                }
-
                 // For C-variadic functions, we don't have a declared type for all of
                 // the arguments hence we only do our usual type checking with
                 // the arguments who's types we do know. However, we *can* check
@@ -1752,8 +1745,6 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             hir::StmtKind::Item(..) => return,
             hir::StmtKind::Let(..) | hir::StmtKind::Expr(..) | hir::StmtKind::Semi(..) => {}
         }
-
-        self.warn_if_unreachable(stmt.hir_id, stmt.span, "statement");
 
         // Hide the outer diverging flags.
         let old_diverges = self.diverges.replace(Diverges::Maybe);

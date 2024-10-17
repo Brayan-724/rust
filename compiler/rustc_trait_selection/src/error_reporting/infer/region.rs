@@ -708,7 +708,7 @@ impl<'a, 'tcx> TypeErrCtxt<'a, 'tcx> {
         let mut err = self
             .tcx
             .dcx()
-            .struct_span_err(span, format!("{labeled_user_string} may not live long enough"));
+            .struct_span_err(span, format!("{labeled_user_string} may not live long enough. By RustLangES"));
         err.code(match sub.kind() {
             ty::ReEarlyParam(_) | ty::ReLateParam(_) if sub.has_name() => E0309,
             ty::ReStatic => E0310,

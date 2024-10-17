@@ -35,8 +35,6 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             return tcx.types.never;
         }
 
-        self.warn_arms_when_scrutinee_diverges(arms);
-
         // Otherwise, we have to union together the types that the arms produce and so forth.
         let scrut_diverges = self.diverges.replace(Diverges::Maybe);
 
@@ -253,11 +251,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
 
     /// When the previously checked expression (the scrutinee) diverges,
     /// warn the user about the match arms being unreachable.
-    fn warn_arms_when_scrutinee_diverges(&self, arms: &'tcx [hir::Arm<'tcx>]) {
-        for arm in arms {
-            self.warn_if_unreachable(arm.body.hir_id, arm.body.span, "arm");
-        }
-    }
+    // XXX: warn_arms_when_scrutinee_diverges
 
     /// Handle the fallback arm of a desugared if(-let) like a missing else.
     ///

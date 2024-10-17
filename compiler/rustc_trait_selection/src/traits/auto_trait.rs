@@ -747,10 +747,10 @@ impl<'tcx> AutoTraitFinder<'tcx> {
                                 &dummy_cause,
                             );
                         }
-                        (Some(ty::OutlivesPredicate(t_a, r_b)), _) => {
+                        (Some(ty::OutlivesPredicate(t_a, _r_b)), _) => {
                             selcx.infcx.register_region_obligation_with_cause(
                                 t_a,
-                                r_b,
+                                selcx.infcx.tcx.lifetimes.re_static, //r_b,
                                 &dummy_cause,
                             );
                         }

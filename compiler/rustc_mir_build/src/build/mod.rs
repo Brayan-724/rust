@@ -23,6 +23,7 @@ use rustc_span::{Span, Symbol};
 use rustc_target::abi::FieldIdx;
 use rustc_target::spec::abi::Abi;
 
+#[allow(unused_imports)]
 use super::lints;
 use crate::build::expr::as_place::PlaceBuilder;
 use crate::build::scope::DropKind;
@@ -46,7 +47,7 @@ pub(crate) fn closure_saved_names_of_captured_variables<'tcx>(
 /// Construct the MIR for a given `DefId`.
 pub(crate) fn mir_build<'tcx>(tcx: TyCtxtAt<'tcx>, def: LocalDefId) -> Body<'tcx> {
     let tcx = tcx.tcx;
-    tcx.ensure_with_value().thir_abstract_const(def);
+    // tcx.ensure_with_value().thir_abstract_const(def);
     if let Err(e) = tcx.check_match(def) {
         return construct_error(tcx, def, e);
     }
@@ -63,7 +64,7 @@ pub(crate) fn mir_build<'tcx>(tcx: TyCtxtAt<'tcx>, def: LocalDefId) -> Body<'tcx
             // "not all control paths return a value" is reported here.
             //
             // maybe move the check to a MIR pass?
-            tcx.ensure().check_liveness(def);
+            // tcx.ensure().check_liveness(def);
 
             // Don't steal here, instead steal in unsafeck. This is so that
             // pattern inline constants can be evaluated as part of building the
@@ -72,7 +73,7 @@ pub(crate) fn mir_build<'tcx>(tcx: TyCtxtAt<'tcx>, def: LocalDefId) -> Body<'tcx
         }
     };
 
-    lints::check(tcx, &body);
+    // lints::check(tcx, &body);
 
     // The borrow checker will replace all the regions here with its own
     // inference variables. There's no point having non-erased regions here.

@@ -639,81 +639,74 @@ impl<'tcx> RegionInferenceContext<'tcx> {
         body: &Body<'tcx>,
         polonius_output: Option<Box<PoloniusOutput>>,
     ) -> (Option<ClosureRegionRequirements<'tcx>>, RegionErrors<'tcx>) {
-        let mir_def_id = body.source.def_id();
-        self.propagate_constraints();
+        // let mir_def_id = body.source.def_id();
+        // self.propagate_constraints();
 
-        let mut errors_buffer = RegionErrors::new(infcx.tcx);
+        let errors_buffer = RegionErrors::new(infcx.tcx);
 
         // If this is a closure, we can propagate unsatisfied
         // `outlives_requirements` to our creator, so create a vector
         // to store those. Otherwise, we'll pass in `None` to the
         // functions below, which will trigger them to report errors
         // eagerly.
-        let mut outlives_requirements = infcx.tcx.is_typeck_child(mir_def_id).then(Vec::new);
+        // let mut outlives_requirements = infcx.tcx.is_typeck_child(mir_def_id).then(Vec::new);
 
-        self.check_type_tests(infcx, outlives_requirements.as_mut(), &mut errors_buffer);
+        // self.check_type_tests(infcx, outlives_requirements.as_mut(), &mut errors_buffer);
 
-        debug!(?errors_buffer);
-        debug!(?outlives_requirements);
+        // debug!(?errors_buffer);
+        // debug!(?outlives_requirements);
 
         // In Polonius mode, the errors about missing universal region relations are in the output
         // and need to be emitted or propagated. Otherwise, we need to check whether the
         // constraints were too strong, and if so, emit or propagate those errors.
-        if infcx.tcx.sess.opts.unstable_opts.polonius.is_legacy_enabled() {
-            self.check_polonius_subset_errors(
-                outlives_requirements.as_mut(),
-                &mut errors_buffer,
-                polonius_output
-                    .as_ref()
-                    .expect("Polonius output is unavailable despite `-Z polonius`"),
-            );
-        } else {
-            self.check_universal_regions(outlives_requirements.as_mut(), &mut errors_buffer);
-        }
+        // if infcx.tcx.sess.opts.unstable_opts.polonius.is_legacy_enabled() {
+        //     self.check_polonius_subset_errors(
+        //         outlives_requirements.as_mut(),
+        //         &mut errors_buffer,
+        //         polonius_output
+        //             .as_ref()
+        //             .expect("Polonius output is unavailable despite `-Z polonius`"),
+        //     );
+        // } else {
+        //     self.check_universal_regions(outlives_requirements.as_mut(), &mut errors_buffer);
+        // }
 
         debug!(?errors_buffer);
 
-        if errors_buffer.is_empty() {
-            self.check_member_constraints(infcx, &mut errors_buffer);
-        }
+        // if errors_buffer.is_empty() {
+        //     self.check_member_constraints(infcx, &mut errors_buffer);
+        // }
 
         debug!(?errors_buffer);
 
-        let outlives_requirements = outlives_requirements.unwrap_or_default();
+        let outlives_requirements = Vec::new(); // outlives_requirements.unwrap_or_default();
 
-        if outlives_requirements.is_empty() {
-            (None, errors_buffer)
-        } else {
-            let num_external_vids = self.universal_regions.num_global_and_external_regions();
-            (
-                Some(ClosureRegionRequirements { num_external_vids, outlives_requirements }),
-                errors_buffer,
-            )
-        }
+        let num_external_vids = self.universal_regions.num_global_and_external_regions();
+        (Some(ClosureRegionRequirements { num_external_vids, outlives_requirements }), errors_buffer)
+
+        // if outlives_requirements.is_empty() {
+        //     (None, errors_buffer)
+        // } else {
+        //     let num_external_vids = self.universal_regions.num_global_and_external_regions();
+        //     (
+        //         Some(ClosureRegionRequirements { num_external_vids, outlives_requirements }),
+        //         errors_buffer,
+        //     )
+        // }
     }
 
     /// Propagate the region constraints: this will grow the values
     /// for each region variable until all the constraints are
     /// satisfied. Note that some values may grow **too** large to be
     /// feasible, but we check this later.
-    #[instrument(skip(self), level = "debug")]
     fn propagate_constraints(&mut self) {
-        debug!("constraints={:#?}", {
-            let mut constraints: Vec<_> = self.outlives_constraints().collect();
-            constraints.sort_by_key(|c| (c.sup, c.sub));
-            constraints
-                .into_iter()
-                .map(|c| (c, self.constraint_sccs.scc(c.sup), self.constraint_sccs.scc(c.sub)))
-                .collect::<Vec<_>>()
-        });
-
         // To propagate constraints, we walk the DAG induced by the
         // SCC. For each SCC, we visit its successors and compute
         // their values, then we union all those values to get our
         // own.
-        for scc in self.constraint_sccs.all_sccs() {
-            self.compute_value_for_scc(scc);
-        }
+        // for scc in self.constraint_sccs.all_sccs() {
+        //     self.compute_value_for_scc(scc);
+        // }
 
         // Sort the applied member constraints so we can binary search
         // through them later.
@@ -875,12 +868,16 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     /// whether the "type tests" produced by typeck were satisfied;
     /// type tests encode type-outlives relationships like `T:
     /// 'a`. See `TypeTest` for more details.
+    #[allow(unreachable_code)]
+    #[allow(unused_mut)]
     fn check_type_tests(
         &self,
         infcx: &InferCtxt<'tcx>,
         mut propagated_outlives_requirements: Option<&mut Vec<ClosureOutlivesRequirement<'tcx>>>,
         errors_buffer: &mut RegionErrors<'tcx>,
     ) {
+        return;
+
         let tcx = infcx.tcx;
 
         // Sometimes we register equivalent type-tests that would

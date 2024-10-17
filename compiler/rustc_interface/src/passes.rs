@@ -835,21 +835,21 @@ fn run_required_analyses(tcx: TyCtxt<'_>) {
                     tcx.ensure().proc_macro_decls_static(())
                 });
 
-                CStore::from_tcx(tcx).report_unused_deps(tcx);
+                // CStore::from_tcx(tcx).report_unused_deps(tcx);
             },
             {
                 tcx.hir().par_for_each_module(|module| {
-                    tcx.ensure().check_mod_loops(module);
-                    tcx.ensure().check_mod_attrs(module);
-                    tcx.ensure().check_mod_naked_functions(module);
-                    tcx.ensure().check_mod_unstable_api_usage(module);
+                    // tcx.ensure().check_mod_loops(module);
+                    // tcx.ensure().check_mod_attrs(module);
+                    // tcx.ensure().check_mod_naked_functions(module);
+                    // tcx.ensure().check_mod_unstable_api_usage(module);
                     tcx.ensure().check_mod_const_bodies(module);
                 });
             },
             {
-                sess.time("unused_lib_feature_checking", || {
-                    rustc_passes::stability::check_unused_or_stable_features(tcx)
-                });
+                // sess.time("unused_lib_feature_checking", || {
+                //     rustc_passes::stability::check_unused_or_stable_features(tcx)
+                // });
             },
             {
                 // We force these queries to run,
@@ -879,7 +879,7 @@ fn run_required_analyses(tcx: TyCtxt<'_>) {
         tcx.hir().par_body_owners(|def_id| {
             // Run unsafety check because it's responsible for stealing and
             // deallocating THIR.
-            tcx.ensure().check_unsafety(def_id);
+            // tcx.ensure().check_unsafety(def_id);
             tcx.ensure().mir_borrowck(def_id)
         });
     });
@@ -953,36 +953,37 @@ fn analysis(tcx: TyCtxt<'_>, (): ()) -> Result<()> {
                         tcx.ensure().check_private_in_public(());
                     },
                     {
-                        tcx.hir()
-                            .par_for_each_module(|module| tcx.ensure().check_mod_deathness(module));
+                        // tcx.hir()
+                        //     .par_for_each_module(|module| tcx.ensure().check_mod_deathness(module));
                     },
                     {
-                        sess.time("lint_checking", || {
-                            rustc_lint::check_crate(tcx);
-                        });
+                        // sess.time("lint_checking", || {
+                        //     rustc_lint::check_crate(tcx);
+                        // });
                     },
                     {
                         tcx.ensure().clashing_extern_declarations(());
                     }
                 );
             },
-            {
-                sess.time("privacy_checking_modules", || {
-                    tcx.hir().par_for_each_module(|module| {
-                        tcx.ensure().check_mod_privacy(module);
-                    });
-                });
-            }
+            {}
+            // {
+            //     sess.time("privacy_checking_modules", || {
+            //         tcx.hir().par_for_each_module(|module| {
+            //             tcx.ensure().check_mod_privacy(module);
+            //         });
+            //     });
+            // }
         );
 
-        // This check has to be run after all lints are done processing. We don't
-        // define a lint filter, as all lint checks should have finished at this point.
-        sess.time("check_lint_expectations", || tcx.ensure().check_expectations(None));
+        // // This check has to be run after all lints are done processing. We don't
+        // // define a lint filter, as all lint checks should have finished at this point.
+        // sess.time("check_lint_expectations", || tcx.ensure().check_expectations(None));
 
-        // This query is only invoked normally if a diagnostic is emitted that needs any
-        // diagnostic item. If the crate compiles without checking any diagnostic items,
-        // we will fail to emit overlap diagnostics. Thus we invoke it here unconditionally.
-        let _ = tcx.all_diagnostic_items(());
+        // // This query is only invoked normally if a diagnostic is emitted that needs any
+        // // diagnostic item. If the crate compiles without checking any diagnostic items,
+        // // we will fail to emit overlap diagnostics. Thus we invoke it here unconditionally.
+        // let _ = tcx.all_diagnostic_items(());
     });
 
     if sess.opts.unstable_opts.print_vtable_sizes {

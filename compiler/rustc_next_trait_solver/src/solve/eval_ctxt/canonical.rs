@@ -380,15 +380,15 @@ where
 
     fn register_region_constraints(
         &mut self,
-        outlives: &[ty::OutlivesPredicate<I, I::GenericArg>],
+        _outlives: &[ty::OutlivesPredicate<I, I::GenericArg>],
     ) {
-        for &ty::OutlivesPredicate(lhs, rhs) in outlives {
-            match lhs.kind() {
-                ty::GenericArgKind::Lifetime(lhs) => self.register_region_outlives(lhs, rhs),
-                ty::GenericArgKind::Type(lhs) => self.register_ty_outlives(lhs, rhs),
-                ty::GenericArgKind::Const(_) => panic!("const outlives: {lhs:?}: {rhs:?}"),
-            }
-        }
+        // for &ty::OutlivesPredicate(lhs, rhs) in outlives {
+        //     match lhs.kind() {
+        //         ty::GenericArgKind::Lifetime(lhs) => self.register_region_outlives(lhs, rhs),
+        //         ty::GenericArgKind::Type(lhs) => self.register_ty_outlives(lhs, rhs),
+        //         ty::GenericArgKind::Const(_) => panic!("const outlives: {lhs:?}: {rhs:?}"),
+        //     }
+        // }
     }
 
     fn register_new_opaque_types(&mut self, opaque_types: &[(ty::OpaqueTypeKey<I>, I::Ty)]) {

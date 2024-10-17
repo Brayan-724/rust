@@ -405,18 +405,18 @@ impl<'p, 'tcx> MatchVisitor<'p, 'tcx> {
         })?;
 
         // Warn unreachable subpatterns.
-        for (arm, is_useful) in report.arm_usefulness.iter() {
-            if let Usefulness::Useful(redundant_subpats) = is_useful
-                && !redundant_subpats.is_empty()
-            {
-                let mut redundant_subpats = redundant_subpats.clone();
-                // Emit lints in the order in which they occur in the file.
-                redundant_subpats.sort_unstable_by_key(|(pat, _)| pat.data().span);
-                for (pat, explanation) in redundant_subpats {
-                    report_unreachable_pattern(cx, arm.arm_data, pat, &explanation, None)
-                }
-            }
-        }
+        // for (arm, is_useful) in report.arm_usefulness.iter() {
+        //     if let Usefulness::Useful(redundant_subpats) = is_useful
+        //         && !redundant_subpats.is_empty()
+        //     {
+        //         let mut redundant_subpats = redundant_subpats.clone();
+        //         // Emit lints in the order in which they occur in the file.
+        //         redundant_subpats.sort_unstable_by_key(|(pat, _)| pat.data().span);
+        //         for (pat, explanation) in redundant_subpats {
+        //             report_unreachable_pattern(cx, arm.arm_data, pat, &explanation, None)
+        //         }
+        //     }
+        // }
         Ok(report)
     }
 
@@ -477,7 +477,7 @@ impl<'p, 'tcx> MatchVisitor<'p, 'tcx> {
             | hir::MatchSource::FormatArgs => {
                 let is_match_arm =
                     matches!(source, hir::MatchSource::Postfix | hir::MatchSource::Normal);
-                report_arm_reachability(&cx, &report, is_match_arm);
+                // report_arm_reachability(&cx, &report, is_match_arm);
             }
             // Unreachable patterns in try and await expressions occur when one of
             // the arms are an uninhabited type. Which is OK.
@@ -743,99 +743,8 @@ impl<'p, 'tcx> MatchVisitor<'p, 'tcx> {
 /// - `x @ Some(ref mut? y)`.
 ///
 /// This analysis is *not* subsumed by NLL.
-fn check_borrow_conflicts_in_at_patterns<'tcx>(cx: &MatchVisitor<'_, 'tcx>, pat: &Pat<'tcx>) {
-    // Extract `sub` in `binding @ sub`.
-    let PatKind::Binding { name, mode, ty, subpattern: Some(box ref sub), .. } = pat.kind else {
-        return;
-    };
-
-    let is_binding_by_move = |ty: Ty<'tcx>| !ty.is_copy_modulo_regions(cx.tcx, cx.param_env);
-
-    let sess = cx.tcx.sess;
-
-    // Get the binding move, extract the mutability if by-ref.
-    let mut_outer = match mode.0 {
-        ByRef::No if is_binding_by_move(ty) => {
-            // We have `x @ pat` where `x` is by-move. Reject all borrows in `pat`.
-            let mut conflicts_ref = Vec::new();
-            sub.each_binding(|_, mode, _, span| {
-                if matches!(mode, ByRef::Yes(_)) {
-                    conflicts_ref.push(span)
-                }
-            });
-            if !conflicts_ref.is_empty() {
-                sess.dcx().emit_err(BorrowOfMovedValue {
-                    binding_span: pat.span,
-                    conflicts_ref,
-                    name,
-                    ty,
-                    suggest_borrowing: Some(pat.span.shrink_to_lo()),
-                });
-            }
-            return;
-        }
-        ByRef::No => return,
-        ByRef::Yes(m) => m,
-    };
-
-    // We now have `ref $mut_outer binding @ sub` (semantically).
-    // Recurse into each binding in `sub` and find mutability or move conflicts.
-    let mut conflicts_move = Vec::new();
-    let mut conflicts_mut_mut = Vec::new();
-    let mut conflicts_mut_ref = Vec::new();
-    sub.each_binding(|name, mode, ty, span| {
-        match mode {
-            ByRef::Yes(mut_inner) => match (mut_outer, mut_inner) {
-                // Both sides are `ref`.
-                (Mutability::Not, Mutability::Not) => {}
-                // 2x `ref mut`.
-                (Mutability::Mut, Mutability::Mut) => {
-                    conflicts_mut_mut.push(Conflict::Mut { span, name })
-                }
-                (Mutability::Not, Mutability::Mut) => {
-                    conflicts_mut_ref.push(Conflict::Mut { span, name })
-                }
-                (Mutability::Mut, Mutability::Not) => {
-                    conflicts_mut_ref.push(Conflict::Ref { span, name })
-                }
-            },
-            ByRef::No if is_binding_by_move(ty) => {
-                conflicts_move.push(Conflict::Moved { span, name }) // `ref mut?` + by-move conflict.
-            }
-            ByRef::No => {} // `ref mut?` + by-copy is fine.
-        }
-    });
-
-    let report_mut_mut = !conflicts_mut_mut.is_empty();
-    let report_mut_ref = !conflicts_mut_ref.is_empty();
-    let report_move_conflict = !conflicts_move.is_empty();
-
-    let mut occurrences = match mut_outer {
-        Mutability::Mut => vec![Conflict::Mut { span: pat.span, name }],
-        Mutability::Not => vec![Conflict::Ref { span: pat.span, name }],
-    };
-    occurrences.extend(conflicts_mut_mut);
-    occurrences.extend(conflicts_mut_ref);
-    occurrences.extend(conflicts_move);
-
-    // Report errors if any.
-    if report_mut_mut {
-        // Report mutability conflicts for e.g. `ref mut x @ Some(ref mut y)`.
-        sess.dcx().emit_err(MultipleMutBorrows { span: pat.span, occurrences });
-    } else if report_mut_ref {
-        // Report mutability conflicts for e.g. `ref x @ Some(ref mut y)` or the converse.
-        match mut_outer {
-            Mutability::Mut => {
-                sess.dcx().emit_err(AlreadyMutBorrowed { span: pat.span, occurrences });
-            }
-            Mutability::Not => {
-                sess.dcx().emit_err(AlreadyBorrowed { span: pat.span, occurrences });
-            }
-        };
-    } else if report_move_conflict {
-        // Report by-ref and by-move conflicts, e.g. `ref x @ y`.
-        sess.dcx().emit_err(MovedWhileBorrowed { span: pat.span, occurrences });
-    }
+fn check_borrow_conflicts_in_at_patterns<'tcx>(_cx: &MatchVisitor<'_, 'tcx>, _pat: &Pat<'tcx>) {
+    // NOP
 }
 
 fn check_for_bindings_named_same_as_variants(

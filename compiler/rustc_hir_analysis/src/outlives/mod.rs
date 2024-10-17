@@ -49,12 +49,12 @@ fn inferred_outlives_of(tcx: TyCtxt<'_>, item_def_id: LocalDefId) -> &[(ty::Clau
 }
 
 fn inferred_outlives_crate(tcx: TyCtxt<'_>, (): ()) -> CratePredicatesMap<'_> {
-    // Compute a map from each ADT (struct/enum/union) and lazy type alias to
-    // the **explicit** outlives predicates (`T: 'a`, `'a: 'b`) that the user wrote.
-    // Typically there won't be many of these, except in older code where
-    // they were mandatory. Nonetheless, we have to ensure that every such
-    // predicate is satisfied, so they form a kind of base set of requirements
-    // for the type.
+    //! Compute a map from each ADT (struct/enum/union) and lazy type alias to
+    //! the **explicit** outlives predicates (`T: 'a`, `'a: 'b`) that the user wrote.
+    //! Typically there won't be many of these, except in older code where
+    //! they were mandatory. Nonetheless, we have to ensure that every such
+    //! predicate is satisfied, so they form a kind of base set of requirements
+    //! for the type.
 
     // Compute the inferred predicates
     let global_inferred_outlives = implicit_infer::infer_predicates(tcx);

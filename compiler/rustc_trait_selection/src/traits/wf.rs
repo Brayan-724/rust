@@ -722,33 +722,33 @@ impl<'a, 'tcx> TypeVisitor<TyCtxt<'tcx>> for WfPredicates<'a, 'tcx> {
                 self.out.extend(obligations);
             }
 
-            ty::FnDef(did, args) => {
+            ty::FnDef(_did, _args) => {
                 // HACK: Check the return type of function definitions for
                 // well-formedness to mostly fix #84533. This is still not
                 // perfect and there may be ways to abuse the fact that we
                 // ignore requirements with escaping bound vars. That's a
                 // more general issue however.
-                let fn_sig = tcx.fn_sig(did).instantiate(tcx, args);
-                fn_sig.output().skip_binder().visit_with(self);
+                // let fn_sig = tcx.fn_sig(did).instantiate(tcx, args);
+                // fn_sig.output().skip_binder().visit_with(self);
 
-                let obligations = self.nominal_obligations(did, args);
-                self.out.extend(obligations);
+                // let obligations = self.nominal_obligations(did, args);
+                // self.out.extend(obligations);
             }
 
-            ty::Ref(r, rty, _) => {
+            ty::Ref(_r, _rty, _) => {
                 // WfReference
-                if !r.has_escaping_bound_vars() && !rty.has_escaping_bound_vars() {
-                    let cause = self.cause(ObligationCauseCode::ReferenceOutlivesReferent(t));
-                    self.out.push(traits::Obligation::with_depth(
-                        tcx,
-                        cause,
-                        self.recursion_depth,
-                        self.param_env,
-                        ty::Binder::dummy(ty::PredicateKind::Clause(ty::ClauseKind::TypeOutlives(
-                            ty::OutlivesPredicate(rty, r),
-                        ))),
-                    ));
-                }
+                // if !r.has_escaping_bound_vars() && !rty.has_escaping_bound_vars() {
+                //     let cause = self.cause(ObligationCauseCode::ReferenceOutlivesReferent(t));
+                //     self.out.push(traits::Obligation::with_depth(
+                //         tcx,
+                //         cause,
+                //         self.recursion_depth,
+                //         self.param_env,
+                //         ty::Binder::dummy(ty::PredicateKind::Clause(ty::ClauseKind::TypeOutlives(
+                //             ty::OutlivesPredicate(rty, r),
+                //         ))),
+                //     ));
+                // }
             }
 
             ty::Coroutine(did, args, ..) => {

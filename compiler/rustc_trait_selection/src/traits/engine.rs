@@ -216,17 +216,18 @@ where
     ///
     /// Takes ownership of the context as doing trait solving afterwards
     /// will result in region constraints getting ignored.
+    #[allow(unused_variables)]
     pub fn resolve_regions_and_report_errors(
         self,
         generic_param_scope: LocalDefId,
         outlives_env: &OutlivesEnvironment<'tcx>,
     ) -> Result<(), ErrorGuaranteed> {
         let errors = self.infcx.resolve_regions(outlives_env);
-        if errors.is_empty() {
+        // if errors.is_empty() {
             Ok(())
-        } else {
-            Err(self.infcx.err_ctxt().report_region_errors(generic_param_scope, &errors))
-        }
+        // } else {
+        //     Err(self.infcx.err_ctxt().report_region_errors(generic_param_scope, &errors))
+        // }
     }
 
     /// Resolves regions and reports errors.

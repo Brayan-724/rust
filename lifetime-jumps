@@ -1,0 +1,4 @@
+compiler/rustc_trait_selection/src/traits/engine.rs|229 col 42| //     Err(self.infcx.err_ctxt().report_region_errors(generic_param_scope, &errors))
+compiler/rustc_hir_analysis/src/check/compare_impl_item.rs|387 col 49| .unwrap_or_else(|| infcx.err_ctxt().report_region_errors(impl_m_def_id, &errors)));
+compiler/rustc_hir_analysis/src/check/wfcheck.rs|183 col 41| Err(infcx_compat.err_ctxt().report_region_errors(body_def_id, &errors_compat))
+compiler/rustc_hir_analysis/src/check/wfcheck.rs|186 col 30| Err(infcx.err_ctxt().report_region_errors(body_def_id, &errors))

@@ -165,7 +165,7 @@ pub(crate) fn type_check<'a, 'tcx>(
         upvars,
     };
 
-    let mut checker = TypeChecker::new(
+    let checker = TypeChecker::new(
         infcx,
         body,
         param_env,
@@ -175,38 +175,23 @@ pub(crate) fn type_check<'a, 'tcx>(
         &mut borrowck_context,
     );
 
-    checker.check_user_type_annotations();
+    // checker.check_user_type_annotations();
 
-    let mut verifier = TypeVerifier::new(&mut checker, promoted);
-    verifier.visit_body(body);
+    // let mut verifier = TypeVerifier::new(&mut checker, promoted);
+    // verifier.visit_body(body);
 
-    checker.typeck_mir(body);
-    checker.equate_inputs_and_outputs(body, &universal_regions, &normalized_inputs_and_output);
-    checker.check_signature_annotation(body);
+    // checker.typeck_mir(body);
+    // checker.equate_inputs_and_outputs(body, &universal_regions, &normalized_inputs_and_output);
+    // checker.check_signature_annotation(body);
 
-    liveness::generate(&mut checker, body, &elements, flow_inits, move_data);
+    // liveness::generate(&mut checker, body, &elements, flow_inits, move_data);
 
-    translate_outlives_facts(&mut checker);
+    // translate_outlives_facts(&mut checker);
     let opaque_type_values = infcx.take_opaque_types();
 
     let opaque_type_values = opaque_type_values
         .into_iter()
         .map(|(opaque_type_key, decl)| {
-            let _: Result<_, ErrorGuaranteed> = checker.fully_perform_op(
-                Locations::All(body.span),
-                ConstraintCategory::OpaqueType,
-                CustomTypeOp::new(
-                    |ocx| {
-                        ocx.infcx.register_member_constraints(
-                            opaque_type_key,
-                            decl.hidden_type.ty,
-                            decl.hidden_type.span,
-                        );
-                        Ok(())
-                    },
-                    "opaque_type_map",
-                ),
-            );
             let hidden_type = infcx.resolve_vars_if_possible(decl.hidden_type);
             trace!("finalized opaque type {:?} to {:#?}", opaque_type_key, hidden_type.ty.kind());
             if hidden_type.has_non_region_infer() {
@@ -239,6 +224,7 @@ pub(crate) fn type_check<'a, 'tcx>(
     MirTypeckResults { constraints, universal_region_relations, opaque_type_values }
 }
 
+#[allow(dead_code)]
 fn translate_outlives_facts(typeck: &mut TypeChecker<'_, '_>) {
     let cx = &mut typeck.borrowck_context;
     if let Some(facts) = cx.all_facts {

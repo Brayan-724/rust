@@ -10,7 +10,7 @@ use rustc_hir::def::{DefKind, Res};
 use rustc_hir::def_id::{DefId, LocalDefId, LocalModDefId};
 use rustc_hir::lang_items::LangItem;
 use rustc_infer::infer::outlives::env::OutlivesEnvironment;
-use rustc_infer::infer::{self, InferCtxt, TyCtxtInferExt};
+use rustc_infer::infer::{InferCtxt, TyCtxtInferExt};
 use rustc_macros::LintDiagnostic;
 use rustc_middle::query::Providers;
 use rustc_middle::ty::print::with_no_trimmed_paths;
@@ -75,26 +75,28 @@ impl<'tcx> WfCheckingCtxt<'_, 'tcx> {
         )
     }
 
+    #[allow(unused_variables)]
     fn register_wf_obligation(
         &self,
         span: Span,
         loc: Option<WellFormedLoc>,
         arg: ty::GenericArg<'tcx>,
     ) {
-        let cause = traits::ObligationCause::new(
-            span,
-            self.body_def_id,
-            ObligationCauseCode::WellFormed(loc),
-        );
-        self.ocx.register_obligation(traits::Obligation::new(
-            self.tcx(),
-            cause,
-            self.param_env,
-            ty::Binder::dummy(ty::PredicateKind::Clause(ty::ClauseKind::WellFormed(arg))),
-        ));
+        // let cause = traits::ObligationCause::new(
+        //     span,
+        //     self.body_def_id,
+        //     ObligationCauseCode::WellFormed(loc),
+        // );
+        // self.ocx.register_obligation(traits::Obligation::new(
+        //     self.tcx(),
+        //     cause,
+        //     self.param_env,
+        //     ty::Binder::dummy(ty::PredicateKind::Clause(ty::ClauseKind::WellFormed(arg))),
+        // ));
     }
 }
 
+#[allow(unused_variables)]
 pub(super) fn enter_wf_checking_ctxt<'tcx, F>(
     tcx: TyCtxt<'tcx>,
     span: Span,
@@ -131,7 +133,7 @@ where
         infcx.implied_bounds_tys_compat(param_env, body_def_id, &assumed_wf_types, false);
     let outlives_env = OutlivesEnvironment::with_bounds(param_env, implied_bounds);
 
-    lint_redundant_lifetimes(tcx, body_def_id, &outlives_env);
+    // lint_redundant_lifetimes(tcx, body_def_id, &outlives_env);
 
     let errors = infcx.resolve_regions(&outlives_env);
     if errors.is_empty() {
@@ -170,6 +172,7 @@ where
     // We could also just always enter if `is_bevy`, and call `implied_bounds_tys`,
     // but that does result in slightly more work when this option is set and
     // just obscures what we mean here anyways. Let's just be explicit.
+
     if is_bevy && !infcx.tcx.sess.opts.unstable_opts.no_implied_bounds_compat {
         let implied_bounds =
             infcx_compat.implied_bounds_tys_compat(param_env, body_def_id, &assumed_wf_types, true);
@@ -722,6 +725,7 @@ fn gather_gat_bounds<'tcx, T: TypeFoldable<TyCtxt<'tcx>>>(
 
 /// Given a known `param_env` and a set of well formed types, can we prove that
 /// `ty` outlives `region`.
+#[allow(unused_variables)]
 fn ty_known_to_outlive<'tcx>(
     tcx: TyCtxt<'tcx>,
     id: LocalDefId,
@@ -730,17 +734,19 @@ fn ty_known_to_outlive<'tcx>(
     ty: Ty<'tcx>,
     region: ty::Region<'tcx>,
 ) -> bool {
-    test_region_obligations(tcx, id, param_env, wf_tys, |infcx| {
-        infcx.register_region_obligation(infer::RegionObligation {
-            sub_region: region,
-            sup_type: ty,
-            origin: infer::RelateParamBound(DUMMY_SP, ty, None),
-        });
-    })
+    true
+    // test_region_obligations(tcx, id, param_env, wf_tys, |infcx| {
+    //     infcx.register_region_obligation(infer::RegionObligation {
+    //         sub_region: region,
+    //         sup_type: ty,
+    //         origin: infer::RelateParamBound(DUMMY_SP, ty, None),
+    //     });
+    // })
 }
 
 /// Given a known `param_env` and a set of well formed types, can we prove that
 /// `region_a` outlives `region_b`
+#[allow(unused_variables)]
 fn region_known_to_outlive<'tcx>(
     tcx: TyCtxt<'tcx>,
     id: LocalDefId,
@@ -749,9 +755,10 @@ fn region_known_to_outlive<'tcx>(
     region_a: ty::Region<'tcx>,
     region_b: ty::Region<'tcx>,
 ) -> bool {
-    test_region_obligations(tcx, id, param_env, wf_tys, |infcx| {
-        infcx.sub_regions(infer::RelateRegionParamBound(DUMMY_SP, None), region_b, region_a);
-    })
+    true
+    // test_region_obligations(tcx, id, param_env, wf_tys, |infcx| {
+    //     infcx.sub_regions(infer::RelateRegionParamBound(DUMMY_SP, None), region_b, region_a);
+    // })
 }
 
 /// Given a known `param_env` and a set of well formed types, set up an
@@ -2188,6 +2195,7 @@ fn check_mod_type_wf(tcx: TyCtxt<'_>, module: LocalModDefId) -> Result<(), Error
     res
 }
 
+#[allow(dead_code)]
 fn lint_redundant_lifetimes<'tcx>(
     tcx: TyCtxt<'tcx>,
     owner_id: LocalDefId,

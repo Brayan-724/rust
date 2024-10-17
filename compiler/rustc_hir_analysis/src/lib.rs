@@ -57,6 +57,8 @@ This API is completely unstable and subject to change.
 
 // tidy-alphabetical-start
 #![allow(internal_features)]
+#![allow(dead_code)]
+#![allow(unreachable_code)]
 #![allow(rustc::diagnostic_outside_of_impl)]
 #![allow(rustc::untranslatable_diagnostic)]
 #![doc(html_root_url = "https://doc.rust-lang.org/nightly/nightly-rustc/")]
@@ -160,6 +162,7 @@ pub fn check_crate(tcx: TyCtxt<'_>) {
     }
 
     tcx.sess.time("coherence_checking", || {
+        // @slac -- IMPORTANT
         tcx.hir().par_for_each_module(|module| {
             let _ = tcx.ensure().check_mod_type_wf(module);
         });
@@ -168,8 +171,8 @@ pub fn check_crate(tcx: TyCtxt<'_>) {
             let _ = tcx.ensure().coherent_trait(trait_def_id);
         }
         // these queries are executed for side-effects (error reporting):
-        let _ = tcx.ensure().crate_inherent_impls_validity_check(());
-        let _ = tcx.ensure().crate_inherent_impls_overlap_check(());
+        // let _ = tcx.ensure().crate_inherent_impls_validity_check(());
+        // let _ = tcx.ensure().crate_inherent_impls_overlap_check(());
     });
 
     if tcx.features().rustc_attrs {

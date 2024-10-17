@@ -399,12 +399,12 @@ impl<'a, 'tcx> ObligationProcessor for FulfillProcessor<'a, 'tcx> {
                 }
 
                 ty::PredicateKind::Clause(ty::ClauseKind::TypeOutlives(ty::OutlivesPredicate(
-                    t_a,
-                    r_b,
+                    _t_a,
+                    _r_b,
                 ))) => {
-                    if infcx.considering_regions {
-                        infcx.register_region_obligation_with_cause(t_a, r_b, &obligation.cause);
-                    }
+                    // if infcx.considering_regions {
+                    //     infcx.register_region_obligation_with_cause(t_a, r_b, &obligation.cause);
+                    // }
                     ProcessResult::Changed(vec![])
                 }
 

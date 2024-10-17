@@ -133,6 +133,7 @@ impl<'a, 'tcx> ConstraintConversion<'a, 'tcx> {
         (self.category, self.span, self.from_closure) = backup;
     }
 
+    #[allow(unreachable_code)]
     fn convert(
         &mut self,
         predicate: ty::OutlivesPredicate<'tcx, ty::GenericArg<'tcx>>,
@@ -141,71 +142,71 @@ impl<'a, 'tcx> ConstraintConversion<'a, 'tcx> {
         debug!("generate: constraints at: {:#?}", self.locations);
 
         // Extract out various useful fields we'll need below.
-        let ConstraintConversion {
-            tcx,
-            infcx,
-            region_bound_pairs,
-            implicit_region_bound,
-            known_type_outlives_obligations,
-            ..
-        } = *self;
+        // let ConstraintConversion {
+        //     tcx,
+        //     infcx,
+        //     region_bound_pairs,
+        //     implicit_region_bound,
+        //     known_type_outlives_obligations,
+        //     ..
+        // } = *self;
 
-        let mut outlives_predicates = vec![(predicate, constraint_category)];
-        for iteration in 0.. {
-            if outlives_predicates.is_empty() {
-                break;
-            }
-
-            if !self.tcx.recursion_limit().value_within_limit(iteration) {
-                bug!(
-                    "FIXME(-Znext-solver): Overflowed when processing region obligations: {outlives_predicates:#?}"
-                );
-            }
-
-            let mut next_outlives_predicates = vec![];
-            for (ty::OutlivesPredicate(k1, r2), constraint_category) in outlives_predicates {
-                match k1.unpack() {
-                    GenericArgKind::Lifetime(r1) => {
-                        let r1_vid = self.to_region_vid(r1);
-                        let r2_vid = self.to_region_vid(r2);
-                        self.add_outlives(r1_vid, r2_vid, constraint_category);
-                    }
-
-                    GenericArgKind::Type(mut t1) => {
-                        // Normalize the type we receive from a `TypeOutlives` obligation
-                        // in the new trait solver.
-                        if infcx.next_trait_solver() {
-                            t1 = self.normalize_and_add_type_outlives_constraints(
-                                t1,
-                                &mut next_outlives_predicates,
-                            );
-                        }
-
-                        // we don't actually use this for anything, but
-                        // the `TypeOutlives` code needs an origin.
-                        let origin = infer::RelateParamBound(self.span, t1, None);
-
-                        TypeOutlives::new(
-                            &mut *self,
-                            tcx,
-                            region_bound_pairs,
-                            Some(implicit_region_bound),
-                            known_type_outlives_obligations,
-                        )
-                        .type_must_outlive(
-                            origin,
-                            t1,
-                            r2,
-                            constraint_category,
-                        );
-                    }
-
-                    GenericArgKind::Const(_) => unreachable!(),
-                }
-            }
-
-            outlives_predicates = next_outlives_predicates;
-        }
+        // let outlives_predicates = vec![(predicate, constraint_category)];
+        // for iteration in 0.. {
+        //     if outlives_predicates.is_empty() {
+        //         break;
+        //     }
+        //
+        //     if !self.tcx.recursion_limit().value_within_limit(iteration) {
+        //         bug!(
+        //             "FIXME(-Znext-solver): Overflowed when processing region obligations: {outlives_predicates:#?}"
+        //         );
+        //     }
+        //
+        //     // let next_outlives_predicates = vec![];
+        //     // for (ty::OutlivesPredicate(k1, r2), constraint_category) in outlives_predicates {
+        //     //     match k1.unpack() {
+        //     //         GenericArgKind::Lifetime(r1) => {
+        //     //             let r1_vid = self.to_region_vid(r1);
+        //     //             let r2_vid = self.to_region_vid(r2);
+        //     //             self.add_outlives(r1_vid, r2_vid, constraint_category);
+        //     //         }
+        //     //
+        //     //         GenericArgKind::Type(_t1) => {
+        //     //             // Normalize the type we receive from a `TypeOutlives` obligation
+        //     //             // in the new trait solver.
+        //     //             // if infcx.next_trait_solver() {
+        //     //             //     t1 = self.normalize_and_add_type_outlives_constraints(
+        //     //             //         t1,
+        //     //             //         &mut next_outlives_predicates,
+        //     //             //     );
+        //     //             // }
+        //     //
+        //     //             // we don't actually use this for anything, but
+        //     //             // the `TypeOutlives` code needs an origin.
+        //     //             // let origin = infer::RelateParamBound(self.span, t1, None);
+        //     //
+        //     //             // TypeOutlives::new(
+        //     //             //     &mut *self,
+        //     //             //     tcx,
+        //     //             //     region_bound_pairs,
+        //     //             //     Some(implicit_region_bound),
+        //     //             //     known_type_outlives_obligations,
+        //     //             // );
+        //     //             // .type_must_outlive(
+        //     //             //     origin,
+        //     //             //     t1,
+        //     //             //     r2,
+        //     //             //     constraint_category,
+        //     //             // );
+        //     //         }
+        //     //
+        //     //         GenericArgKind::Const(_) => unreachable!(),
+        //     //     }
+        //     // }
+        //
+        //     // outlives_predicates = next_outlives_predicates;
+        // }
     }
 
     /// Placeholder regions need to be converted eagerly because it may

@@ -97,6 +97,8 @@ pub(super) fn infer_predicates(
     global_inferred_outlives
 }
 
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
 fn insert_required_predicates_to_be_wf<'tcx>(
     tcx: TyCtxt<'tcx>,
     ty: Ty<'tcx>,
@@ -105,6 +107,7 @@ fn insert_required_predicates_to_be_wf<'tcx>(
     required_predicates: &mut RequiredPredicates<'tcx>,
     explicit_map: &mut ExplicitPredicatesMap<'tcx>,
 ) {
+    return;
     for arg in ty.walk() {
         let leaf_ty = match arg.unpack() {
             GenericArgKind::Type(ty) => ty,
@@ -121,48 +124,48 @@ fn insert_required_predicates_to_be_wf<'tcx>(
                 //
                 // We also want to calculate potential predicates for the `T`.
                 debug!("Ref");
-                insert_outlives_predicate(tcx, rty.into(), region, span, required_predicates);
+                // insert_outlives_predicate(tcx, rty.into(), region, span, required_predicates);
             }
 
             ty::Adt(def, args) => {
                 // For ADTs (structs/enums/unions), we check inferred and explicit predicates.
                 debug!("Adt");
-                check_inferred_predicates(
-                    tcx,
-                    def.did(),
-                    args,
-                    global_inferred_outlives,
-                    required_predicates,
-                );
-                check_explicit_predicates(
-                    tcx,
-                    def.did(),
-                    args,
-                    required_predicates,
-                    explicit_map,
-                    None,
-                );
+                // check_inferred_predicates(
+                //     tcx,
+                //     def.did(),
+                //     args,
+                //     global_inferred_outlives,
+                //     required_predicates,
+                // );
+                // check_explicit_predicates(
+                //     tcx,
+                //     def.did(),
+                //     args,
+                //     required_predicates,
+                //     explicit_map,
+                //     None,
+                // );
             }
 
             ty::Alias(ty::Weak, alias) => {
                 // This corresponds to a type like `Type<'a, T>`.
                 // We check inferred and explicit predicates.
                 debug!("Weak");
-                check_inferred_predicates(
-                    tcx,
-                    alias.def_id,
-                    alias.args,
-                    global_inferred_outlives,
-                    required_predicates,
-                );
-                check_explicit_predicates(
-                    tcx,
-                    alias.def_id,
-                    alias.args,
-                    required_predicates,
-                    explicit_map,
-                    None,
-                );
+                // check_inferred_predicates(
+                //     tcx,
+                //     alias.def_id,
+                //     alias.args,
+                //     global_inferred_outlives,
+                //     required_predicates,
+                // );
+                // check_explicit_predicates(
+                //     tcx,
+                //     alias.def_id,
+                //     alias.args,
+                //     required_predicates,
+                //     explicit_map,
+                //     None,
+                // );
             }
 
             ty::Dynamic(obj, ..) => {
@@ -318,6 +321,7 @@ fn check_explicit_predicates<'tcx>(
 /// initially come back empty, but in next round we will get `U: 'b`.
 /// We then apply the instantiation `['b => 'a, U => T]` and thus get the
 /// requirement that `T: 'a` holds for `Outer`.
+#[allow(dead_code)]
 fn check_inferred_predicates<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: DefId,

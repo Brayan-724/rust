@@ -439,6 +439,8 @@ impl Direction for Forward {
         }
     }
 
+    #[allow(unused_variables)]
+    #[allow(unreachable_code)]
     fn visit_results_in_block<'mir, 'tcx, F, R>(
         state: &mut F,
         block: BasicBlock,
@@ -448,6 +450,7 @@ impl Direction for Forward {
     ) where
         R: ResultsVisitable<'tcx, Domain = F>,
     {
+        return;
         results.reset_to_block_entry(state, block);
 
         vis.visit_block_start(state);

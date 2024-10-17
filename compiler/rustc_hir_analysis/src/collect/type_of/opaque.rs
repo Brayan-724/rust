@@ -273,16 +273,7 @@ impl TaitConstraintLocator<'_> {
         debug!(?borrowck_results.concrete_opaque_types);
         if let Some(&concrete_type) = borrowck_results.concrete_opaque_types.get(&self.def_id) {
             debug!(?concrete_type, "found constraint");
-            if let Some(prev) = &mut self.found {
-                if concrete_type.ty != prev.ty {
-                    let (Ok(guar) | Err(guar)) = prev
-                        .build_mismatch_error(&concrete_type, self.def_id, self.tcx)
-                        .map(|d| d.emit());
-                    prev.ty = Ty::new_error(self.tcx, guar);
-                }
-            } else {
-                self.found = Some(concrete_type);
-            }
+            self.found = Some(concrete_type);
         }
     }
 }

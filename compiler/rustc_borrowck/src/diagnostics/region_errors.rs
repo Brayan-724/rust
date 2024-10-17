@@ -303,7 +303,11 @@ impl<'infcx, 'tcx> MirBorrowckCtxt<'_, 'infcx, 'tcx> {
     }
 
     /// Produces nice borrowck error diagnostics for all the errors collected in `nll_errors`.
+    #[allow(unreachable_code)]
+    #[allow(unused_mut)]
+    #[allow(unused_variables)]
     pub(crate) fn report_region_errors(&mut self, nll_errors: RegionErrors<'tcx>) {
+        return;
         // Iterate through all the errors, producing a diagnostic for each one. The diagnostics are
         // buffered in the `MirBorrowckCtxt`.
 
@@ -323,13 +327,13 @@ impl<'infcx, 'tcx> MirBorrowckCtxt<'_, 'infcx, 'tcx> {
                     if let Some(lower_bound_region) = lower_bound_region {
                         let generic_ty = type_test.generic_kind.to_ty(self.infcx.tcx);
                         let origin = RelateParamBound(type_test_span, generic_ty, None);
-                        self.buffer_error(self.infcx.err_ctxt().construct_generic_bound_failure(
-                            self.body.source.def_id().expect_local(),
-                            type_test_span,
-                            Some(origin),
-                            type_test.generic_kind,
-                            lower_bound_region,
-                        ));
+                        // self.buffer_error(self.infcx.err_ctxt().construct_generic_bound_failure(
+                        //     self.body.source.def_id().expect_local(),
+                        //     type_test_span,
+                        //     Some(origin),
+                        //     type_test.generic_kind,
+                        //     lower_bound_region,
+                        // ));
                     } else {
                         // FIXME. We should handle this case better. It
                         // indicates that we have e.g., some region variable
@@ -436,6 +440,9 @@ impl<'infcx, 'tcx> MirBorrowckCtxt<'_, 'infcx, 'tcx> {
     // FIXME: make this translatable
     #[allow(rustc::diagnostic_outside_of_impl)]
     #[allow(rustc::untranslatable_diagnostic)]
+    #[allow(unused_variables)]
+    #[allow(unused_mut)]
+    #[allow(unreachable_code)]
     pub(crate) fn report_region_error(
         &mut self,
         fr: RegionVid,
@@ -443,6 +450,8 @@ impl<'infcx, 'tcx> MirBorrowckCtxt<'_, 'infcx, 'tcx> {
         outlived_fr: RegionVid,
         outlives_suggestion: &mut OutlivesSuggestionBuilder,
     ) {
+        return;
+
         debug!("report_region_error(fr={:?}, outlived_fr={:?})", fr, outlived_fr);
 
         let (blame_constraint, extra_info) =

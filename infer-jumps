@@ -1,0 +1,19 @@
+compiler/rustc_borrowck/src/diagnostics/bound_region_errors.rs|443 col 10| .constraints
+compiler/rustc_borrowck/src/diagnostics/bound_region_errors.rs|448 col 14| .constraints
+compiler/rustc_infer/src/infer/canonical/query_response.rs|645 col 32| let RegionConstraintData { constraints, verifys, member_constraints } = region_constraints;
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|143 col 19| self.data.constraints.retain(|(constraint, _)| seen.insert(*constraint));
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|171 col 49| for (idx, (constraint, _)) in self.data.constraints.iter().enumerate() {
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|187 col 43| for (constraint, _) in &self.data.constraints {
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|526 col 48| for (constraint, origin) in &self.data.constraints {
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|664 col 43| for (constraint, _) in &self.data.constraints {
+compiler/rustc_infer/src/infer/lexical_region_resolve/mod.rs|870 col 30| .constraints
+compiler/rustc_infer/src/infer/region_constraints/leak_check.rs|413 col 68| each_constraint(&region_constraints.data().constraints[i].0);
+compiler/rustc_infer/src/infer/region_constraints/leak_check.rs|425 col 18| .constraints
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|74 col 9| pub constraints: Vec<(Constraint<'tcx>, SubregionOrigin<'tcx>)>,
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|404 col 39| let index = self.storage.data.constraints.len();
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|405 col 27| self.storage.data.constraints.push((constraint, origin));
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|748 col 36| let RegionConstraintData { constraints, member_constraints, verifys } = self;
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|761 col 27| self.data.constraints.pop().unwrap();
+compiler/rustc_infer/src/infer/region_constraints/mod.rs|762 col 38| assert_eq!(self.data.constraints.len(), index);
+compiler/rustc_trait_selection/src/traits/auto_trait.rs|461 col 41| for (constraint, _) in &regions.constraints {
+compiler/rustc_trait_selection/src/traits/coherence.rs|256 col 10| .constraints
